@@ -412,9 +412,9 @@
       document.getElementById('back-btn').classList.add('hidden');
       return;
     }
+    if (name === 'frenzy') { openFrenzy(); return; }
+    if (name === 'wordbomb') { openBomb(); return; }
     document.getElementById('view-' + name).classList.remove('hidden');
-    if (name === 'frenzy') openFrenzy();
-    if (name === 'wordbomb') openBomb();
   }
   function goHome() { showView('home'); }
 
