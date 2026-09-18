@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Garden Retreat Games</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f4a37">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Garden Games">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<style>
+  :root {
+    --moss: #2f4a37;
+    --moss-deep: #1f3226;
+    --leaf: #6fa16a;
+    --sun: #f4b942;
+    --sun-deep: #d99a1f;
+    --sky: #7fc4d6;
+    --berry: #d1567b;
+    --paper: #fbf8ee;
+    --paper-2: #f2ecd8;
+    --ink: #23301f;
+    --ink-soft: #55624c;
+    --line: rgba(35,48,31,0.14);
+    --danger: #e15252;
+    --warn: #eab308;
+    --safe: #3f8f52;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1a2318; --paper-2: #212c1e; --ink: #eef2e6; --ink-soft: #b7c2ac; --line: rgba(238,242,230,0.16);
+    }
+  }
+  :root[data-theme="dark"] { --paper: #1a2318; --paper-2: #212c1e; --ink: #eef2e6; --ink-soft: #b7c2ac; --line: rgba(238,242,230,0.16); }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--paper); color: var(--ink); font-family: 'Nunito', sans-serif; overscroll-behavior: none; }
+  h1, h2, h3, .display { font-family: 'Baloo 2', 'Nunito', sans-serif; }
+  button { font-family: inherit; }
+  #app { min-height: 100dvh; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 12px; border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; z-index: 20; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--moss); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .brand h1 { font-size: 19px; margin: 0; color: var(--ink); font-weight: 700; }
+  .brand span { font-size: 12px; color: var(--ink-soft); display: block; margin-top: -2px; }
+  .back-btn { border: none; background: var(--paper-2); color: var(--ink); padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .back-btn:active { transform: scale(0.96); }
+
+  main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  .home-wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+  .hero { text-align: center; padding: 10px 0 30px; }
+  .hero .kicker { color: var(--leaf); font-weight: 800; font-size: 14px; letter-spacing: 0.02em; }
+  .hero h2 { font-size: clamp(28px, 6vw, 40px); margin: 6px 0 10px; color: var(--moss); line-height: 1.05; font-weight: 800; }
+  .hero p { color: var(--ink-soft); font-size: 16px; max-width: 480px; margin: 0 auto; }
+
+  .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .game-grid { grid-template-columns: 1fr; } }
+
+  .game-card { position: relative; text-align: left; border: none; cursor: pointer; padding: 22px 20px 20px; border-radius: 22px; overflow: hidden; color: #fff; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; transition: transform 0.15s ease; }
+  .game-card:active { transform: scale(0.97); }
+  .game-card .emoji { position: absolute; top: 16px; right: 18px; font-size: 30px; opacity: 0.9; }
+  .game-card h3 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .game-card p { margin: 0; font-size: 13.5px; opacity: 0.92; line-height: 1.35; }
+  .card-1 { background: linear-gradient(155deg, #3a5c42, var(--moss-deep)); }
+  .card-2 { background: linear-gradient(155deg, var(--berry), #a53f60); }
+  .card-3 { background: linear-gradient(155deg, var(--sky), #4a90a4); }
+  .card-4 { background: linear-gradient(155deg, var(--sun), var(--sun-deep)); color: var(--moss-deep); }
+  .card-4 p { opacity: 0.85; }
+  .card-5 { background: linear-gradient(155deg, #e46262, #8f2b2b); }
+
+  .foot-note { margin-top: 32px; text-align: center; color: var(--ink-soft); font-size: 13px; }
+
+  #install-row { display: flex; justify-content: center; margin-top: 18px; }
+  .install-btn { border: none; background: var(--paper-2); border: 1.5px solid var(--line); color: var(--ink); padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+  .ios-hint { max-width: 360px; margin: 14px auto 0; text-align: center; font-size: 13px; color: var(--ink-soft); background: var(--paper-2); border-radius: 14px; padding: 12px 16px; }
+
+  .view { max-width: 640px; margin: 0 auto; padding: 22px 20px 60px; }
+  .view-head { text-align: center; margin-bottom: 20px; }
+  .view-head h2 { font-size: 26px; margin: 0 0 6px; color: var(--moss); }
+  .view-head p { color: var(--ink-soft); font-size: 14.5px; margin: 0; }
+
+  .btn { border: none; border-radius: 999px; padding: 14px 22px; font-weight: 800; font-size: 15.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--moss); color: #fdfbf3; }
+  .btn-secondary { background: var(--paper-2); color: var(--ink); }
+  .btn-block { width: 100%; }
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+
+  textarea, input[type="number"], input[type="text"] { width: 100%; border: 1.5px solid var(--line); background: var(--paper-2); color: var(--ink); border-radius: 14px; padding: 12px 14px; font-size: 15px; font-family: inherit; resize: vertical; }
+  textarea:focus, input:focus { outline: 2px solid var(--leaf); outline-offset: 1px; }
+  label { font-weight: 700; font-size: 13.5px; color: var(--ink-soft); display: block; margin: 14px 0 6px; }
+
+  .stepper { display: flex; align-items: center; gap: 14px; }
+  .stepper button { width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--moss); color: #fff; font-size: 20px; font-weight: 800; cursor: pointer; }
+  .stepper .count { font-size: 22px; font-weight: 800; min-width: 30px; text-align: center; }
+
+  .teams-grid { display: grid; gap: 14px; margin-top: 20px; }
+  .team-card { border-radius: 18px; padding: 16px 18px; color: #fff; animation: pop 0.35s ease backwards; }
+  .team-card h4 { margin: 0 0 8px; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { background: rgba(255,255,255,0.22); padding: 6px 12px; border-radius: 999px; font-size: 13.5px; font-weight: 700; }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+  .chip-toggle-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+  .chip-toggle { border: 1.5px solid var(--line); background: var(--paper-2); color: var(--ink-soft); padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .chip-toggle.active { background: var(--moss); border-color: var(--moss); color: #fff; }
+
+  .prompt-card { background: linear-gradient(160deg, #3a5c42, var(--moss-deep)); color: #fdfbf3; border-radius: 26px; padding: 34px 26px; text-align: center; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; position: relative; overflow: hidden; }
+  .prompt-card .cat-tag { font-size: 12.5px; font-weight: 800; letter-spacing: 0.03em; background: rgba(255,255,255,0.16); padding: 5px 14px; border-radius: 999px; }
+  .prompt-card .prompt-emoji { font-size: 34px; }
+  .prompt-card .prompt-text { font-size: clamp(18px, 4.3vw, 23px); font-weight: 700; line-height: 1.3; font-family: 'Baloo 2'; animation: fadein 0.3s ease; }
+  .prompt-card .prompt-sub { font-size: 13.5px; color: rgba(253,251,243,0.75); }
+  .prompt-card .prompt-who { font-size: 14.5px; font-weight: 800; color: var(--sun); margin-top: 2px; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+
+  .score-strip { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; background: var(--paper-2); border-radius: 16px; padding: 12px 16px; }
+  .score-strip .score-num { font-size: 24px; font-weight: 800; color: var(--berry); min-width: 30px; text-align: center; }
+  .score-strip button { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--moss); color: #fff; font-weight: 800; cursor: pointer; }
+  .score-strip .score-label { font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+
+  .word-card { background: var(--paper-2); border-radius: 26px; padding: 44px 26px; text-align: center; min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; border: 2px dashed var(--line); }
+  .word-hidden { font-size: 15px; color: var(--ink-soft); font-weight: 700; }
+  .word-text { font-size: clamp(24px, 6vw, 34px); font-weight: 800; color: var(--moss); font-family: 'Baloo 2'; animation: fadein 0.25s ease; }
+  .timer-display { font-size: 34px; font-weight: 800; color: var(--berry); font-family: 'Baloo 2'; }
+
+  /* ---- Full-screen overlay shell (Finger Frenzy + Word Bomb) ---- */
+  .overlay-shell { position: fixed; inset: 0; background: var(--moss-deep); z-index: 50; display: flex; flex-direction: column; }
+  .overlay-hud { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; color: #fdfbf3; z-index: 5; }
+  .overlay-hud .status { font-family: 'Baloo 2'; font-size: 16px; font-weight: 700; text-align: center; flex: 1; }
+  .overlay-close { border: none; background: rgba(255,255,255,0.14); color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+
+  /* Finger Frenzy */
+  .frenzy-area { flex: 1; position: relative; touch-action: none; overflow: hidden; }
+  .frenzy-intro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #fdfbf3; padding: 30px; gap: 16px; }
+  .frenzy-intro h3 { font-size: 24px; margin: 0; }
+  .frenzy-intro p { color: rgba(253,251,243,0.75); max-width: 340px; margin: 0; font-size: 15px; }
+  .touch-dot { position: absolute; width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translate(-50%, -50%); box-shadow: 0 0 0 6px rgba(255,255,255,0.18); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .touch-dot.out { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+  .touch-dot.winner { box-shadow: 0 0 0 8px rgba(244,185,66,0.65); }
+  .winner-banner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fdfbf3; text-align: center; gap: 10px; padding: 20px; }
+  .winner-banner .big { font-size: 44px; }
+  .winner-banner h3 { font-size: 26px; margin: 0; font-family: 'Baloo 2'; }
+
+  /* Word Bomb */
+  #bomb-shell { transition: background-color 0.4s ease; }
+  .bomb-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 20px 26px; text-align: center; color: #fdfbf3; }
+  .bomb-intro { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; }
+  .bomb-intro h3 { font-size: 26px; margin: 0; }
+  .bomb-intro ul { text-align: left; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; max-width: 320px; }
+  .bomb-category-label { text-transform: uppercase; letter-spacing: 0.05em; font-size: 13px; font-weight: 800; color: rgba(253,251,243,0.7); }
+  .bomb-category { font-size: clamp(28px, 7vw, 42px); font-weight: 800; font-family: 'Baloo 2'; margin: 6px 0 0; line-height: 1.1; }
+  .bomb-icon { font-size: 90px; margin: 10px 0; }
+  @keyframes pulse-slow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  @keyframes shake { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-8px) rotate(-4deg); } 75% { transform: translateX(8px) rotate(4deg); } }
+  .bomb-icon.pulse { animation: pulse-slow 1s infinite ease-in-out; }
+  .bomb-icon.danger { animation: shake 0.4s infinite ease-in-out; }
+  .bomb-pass-count { font-size: 14px; background: rgba(255,255,255,0.16); padding: 6px 14px; border-radius: 999px; margin-bottom: 14px; }
+  .bomb-pass-btn { width: 100%; max-width: 420px; min-height: 130px; border-radius: 30px; border: 3px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.16); color: #fff; font-size: 24px; font-weight: 800; font-family: 'Baloo 2'; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .bomb-pass-btn:active { background: rgba(255,255,255,0.32); transform: scale(0.98); }
+  .bomb-end { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; }
+  .bomb-end h3 { font-size: 46px; margin: 0; color: #fff; }
+  .bomb-forfeit-box { background: rgba(0,0,0,0.22); border-radius: 20px; padding: 20px 22px; max-width: 420px; }
+  .bomb-forfeit-box p { margin: 0 0 8px; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(253,251,243,0.7); font-weight: 800; }
+  .bomb-forfeit-box h4 { margin: 0; font-size: 21px; font-family: 'Baloo 2'; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= TOP BAR ================= -->
+  <div class="topbar" id="topbar">
+    <div class="brand">
+      <div class="brand-mark">🌿</div>
+      <div>
+        <h1>Garden Games</h1>
+        <span id="topbar-sub">Youth retreat edition</span>
+      </div>
+    </div>
+    <button class="back-btn hidden" id="back-btn" onclick="goHome()">← Games</button>
+  </div>
+
+  <main>
+    <!-- ================= HOME ================= -->
+    <section id="view-home" class="home-wrap">
+      <div class="hero">
+        <div class="kicker">THE GARDEN · ALL AGES</div>
+        <h2>One iPad.<br>The whole group.</h2>
+        <p>Pick a game, pass the iPad around or gather everyone in close. Built to play together, no extra gear needed.</p>
+      </div>
+
+      <div class="game-grid">
+        <button class="game-card card-1" onclick="showView('shuffle')">
+          <div class="emoji">🧺</div>
+          <h3>Team Shuffle</h3>
+          <p>Split everyone into random teams in one tap.</p>
+        </button>
+        <button class="game-card card-2" onclick="showView('frenzy')">
+          <div class="emoji">✋</div>
+          <h3>Finger Frenzy</h3>
+          <p>Everyone puts a finger on the screen, last one standing wins.</p>
+        </button>
+        <button class="game-card card-3" onclick="showView('deck')">
+          <div class="emoji">🌼</div>
+          <h3>Prompt Deck</h3>
+          <p>Icebreakers, would-you-rathers, faith talk, dares &amp; challenges.</p>
+        </button>
+        <button class="game-card card-4" onclick="showView('charades')">
+          <div class="emoji">🎭</div>
+          <h3>Act It Out</h3>
+          <p>Charades with Bible characters, animals &amp; silly actions.</p>
+        </button>
+        <button class="game-card card-5" onclick="showView('wordbomb')">
+          <div class="emoji">💣</div>
+          <h3>Word Bomb</h3>
+          <p>Name something in the category before time runs out, then pass it on!</p>
+        </button>
+      </div>
+
+      <div id="install-row"></div>
+      <p class="ios-hint hidden" id="ios-hint">On iPad: tap the Share icon, then "Add to Home Screen" to install this as an app.</p>
+
+      <p class="foot-note">Tip: for Finger Frenzy and Word Bomb, lay the iPad flat on a table so everyone can reach it.</p>
+    </section>
+
+    <!-- ================= TEAM SHUFFLE ================= -->
+    <section id="view-shuffle" class="view hidden">
+      <div class="view-head">
+        <h2>Team Shuffle 🧺</h2>
+        <p>Add names (optional) and choose how many teams you need.</p>
+      </div>
+
+      <label for="names-input">Names, one per line (leave blank to just use a headcount)</label>
+      <textarea id="names-input" rows="5" placeholder="Tobi&#10;Ada&#10;Chidi&#10;Grace&#10;..."></textarea>
+
+      <label>How many people, if no names typed?</label>
+      <div class="stepper">
+        <button onclick="adjustCount(-1)">−</button>
+        <div class="count" id="headcount">15</div>
+        <button onclick="adjustCount(1)">+</button>
+      </div>
+
+      <label>Number of teams</label>
+      <div class="stepper">
+        <button onclick="adjustTeams(-1)">−</button>
+        <div class="count" id="teamcount">3</div>
+        <button onclick="adjustTeams(1)">+</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary btn-block" onclick="shuffleTeams()">🔀 Shuffle Teams</button>
+      </div>
+
+      <div class="teams-grid" id="teams-output"></div>
+    </section>
+
+    <!-- ================= PROMPT DECK (merged icebreaker deck) ================= -->
+    <section id="view-deck" class="view hidden">
+      <div class="view-head">
+        <h2>Prompt Deck 🌼</h2>
+        <p>Optional: add names so the deck can call on people by name.</p>
+      </div>
+
+      <textarea id="deck-names" rows="2" placeholder="Add names separated by commas or new lines (optional)"></textarea>
+
+      <div class="chip-toggle-row" id="deck-filters" style="margin-top:16px;"></div>
+
+      <div class="prompt-card">
+        <div class="cat-tag" id="deck-cat">ICEBREAKER</div>
+        <div class="prompt-emoji" id="deck-emoji">🌼</div>
+        <div class="prompt-text" id="deck-prompt">Tap "Draw a Card" to begin.</div>
+        <div class="prompt-sub" id="deck-instruction"></div>
+        <div class="prompt-who" id="deck-who"></div>
+      </div>
+
+      <div class="btn-grid2">
+        <button class="btn btn-secondary" onclick="pickPersonDeck()">🎯 Pick Person</button>
+        <button class="btn btn-secondary" onclick="drawGroupCard()">👥 Group Card</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-block" onclick="drawDeck()">🎴 Draw a Card</button>
+      </div>
+
+      <div class="score-strip">
+        <span class="score-label">🔥 Group Points</span>
+        <button onclick="changeScore(-1)">−</button>
+        <span class="score-num" id="deck-score">0</span>
+        <button onclick="changeScore(1)">+</button>
+        <span class="score-label">goal: 15</span>
+      </div>
+    </section>
+
+    <!-- ================= CHARADES ================= -->
+    <section id="view-charades" class="view hidden">
+      <div class="view-head">
+        <h2>Act It Out 🎭</h2>
+        <p>One person looks, everyone else guesses. No talking allowed!</p>
+      </div>
+
+      <div class="chip-toggle-row" id="charades-filters"></div>
+
+      <div class="word-card">
+        <div class="word-hidden" id="word-hidden-label">Tap reveal to see your word</div>
+        <div class="word-text hidden" id="word-text">???</div>
+        <div class="timer-display hidden" id="timer-display">0:60</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="reveal-btn" onclick="revealWord()">👀 Reveal</button>
+        <button class="btn btn-primary btn-block" onclick="nextWord()">➡️ Next Word</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary btn-block" id="timer-btn" onclick="toggleTimer()">⏱️ Start 60s Timer</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= FINGER FRENZY (full screen overlay) ================= -->
+<div class="overlay-shell hidden" id="frenzy-shell">
+  <div class="overlay-hud">
+    <button class="overlay-close" onclick="closeFrenzy()">✕</button>
+    <div class="status" id="frenzy-status">Everyone put a finger down!</div>
+    <div style="width:38px"></div>
+  </div>
+  <div class="frenzy-area" id="frenzy-area">
+    <div class="frenzy-intro" id="frenzy-intro">
+      <div style="font-size:52px">✋</div>
+      <h3>Finger Frenzy</h3>
+      <p>Everyone places one finger on the screen and holds still. When enough fingers are down, tap Start, fingers get eliminated one by one until a winner remains!</p>
+      <button class="btn btn-primary" onclick="startFrenzyRound()">Start Round</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= WORD BOMB (full screen overlay) ================= -->
+<div class="overlay-shell hidden" id="bomb-shell">
+  <div class="overlay-hud">
+    <button class="overlay-close" onclick="closeBomb()">✕</button>
+    <div class="status">Word Bomb</div>
+    <div style="width:38px"></div>
+  </div>
+
+  <div class="bomb-body" id="bomb-body">
+    <!-- Intro -->
+    <div id="bomb-intro" class="bomb-intro">
+      <div style="font-size:56px">💣</div>
+      <h3>Word Bomb</h3>
+      <ul>
+        <li>1. Sit in a circle.</li>
+        <li>2. Read the category out loud.</li>
+        <li>3. Say a word that fits, tap the button, and pass the iPad!</li>
+        <li>🔥 Don't be the one holding it when it explodes.</li>
+      </ul>
+      <button class="btn btn-primary" onclick="startBomb()">Start Round</button>
+    </div>
+
+    <!-- Playing -->
+    <div id="bomb-playing" class="hidden" style="display:flex; flex-direction:column; align-items:center; justify-content:space-between; flex:1; width:100%;">
+      <div>
+        <div class="bomb-category-label">Category</div>
+        <div class="bomb-category" id="bomb-category">Loading...</div>
+      </div>
+      <div class="bomb-icon pulse" id="bomb-icon">💣</div>
+      <div>
+        <div class="bomb-pass-count">Passes: <span id="bomb-pass-count">0</span></div>
+        <button class="bomb-pass-btn" onclick="bombPass()">
+          <span>👉 TAP &amp; PASS</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- End -->
+    <div id="bomb-end" class="hidden bomb-end">
+      <h3>💥 BOOM!</h3>
+      <div class="bomb-forfeit-box">
+        <p>The person holding it must:</p>
+        <h4 id="bomb-forfeit">Loading forfeit...</h4>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetBombIntro()">Menu</button>
+        <button class="btn btn-primary" onclick="startBomb()">Play Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==================================================================
+  // NAVIGATION
+  // ==================================================================
+  function showView(name) {
+    document.querySelectorAll('.view, #view-home').forEach(v => v.classList.add('hidden'));
+    document.getElementById('back-btn').classList.remove('hidden');
+    if (name === 'home') {
+      document.getElementById('view-home').classList.remove('hidden');
+      document.getElementById('back-btn').classList.add('hidden');
+      return;
+    }
+    document.getElementById('view-' + name).classList.remove('hidden');
+    if (name === 'frenzy') openFrenzy();
+    if (name === 'wordbomb') openBomb();
+  }
+  function goHome() { showView('home'); }
+
+  // ==================================================================
+  // TEAM SHUFFLE
+  // ==================================================================
+  let headcount = 15, teamCount = 3;
+  function adjustCount(d) { headcount = Math.max(2, Math.min(60, headcount + d)); document.getElementById('headcount').textContent = headcount; }
+  function adjustTeams(d) { teamCount = Math.max(2, Math.min(8, teamCount + d)); document.getElementById('teamcount').textContent = teamCount; }
+
+  const teamPalette = ['#3a5c42', '#d1567b', '#4a90a4', '#d99a1f', '#8a5fb0', '#c1653b', '#5c8a5f', '#3f6fa8'];
+  const teamEmoji = ['🌿', '🌸', '🐚', '☀️', '🍇', '🍂', '🍀', '🌊'];
+
+  function shuffleTeams() {
+    const raw = document.getElementById('names-input').value.trim();
+    let people = raw ? raw.split('\n').map(s => s.trim()).filter(Boolean) : Array.from({length: headcount}, (_, i) => 'Player ' + (i + 1));
+    for (let i = people.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [people[i], people[j]] = [people[j], people[i]];
+    }
+    const teams = Array.from({length: teamCount}, () => []);
+    people.forEach((p, i) => teams[i % teamCount].push(p));
+
+    const out = document.getElementById('teams-output');
+    out.innerHTML = '';
+    teams.forEach((members, i) => {
+      if (!members.length) return;
+      const card = document.createElement('div');
+      card.className = 'team-card';
+      card.style.background = teamPalette[i % teamPalette.length];
+      card.style.animationDelay = (i * 0.08) + 's';
+      card.innerHTML = `<h4>${teamEmoji[i % teamEmoji.length]} Team ${i + 1}</h4>
+        <div class="chip-row">${members.map(m => `<span class="chip">${m}</span>`).join('')}</div>`;
+      out.appendChild(card);
+    });
+  }
+
+  // ==================================================================
+  // PROMPT DECK (merged: original Icebreaker Deck + ChatGPT's card set)
+  // ==================================================================
+  const deckCards = [
+    // Icebreaker
+    {category:'Icebreaker', emoji:'😂', prompt:"Everyone point to the person most likely to accidentally become famous.", instruction:"Count 1, 2, 3 and everyone points at the same time."},
+    {category:'Icebreaker', emoji:'🤭', prompt:"What is the funniest thing you believed when you were a child?", instruction:"Keep each answer short."},
+    {category:'Icebreaker', emoji:'🎭', prompt:"Do your best impression of someone in the group.", instruction:"Keep it friendly."},
+    {category:'Icebreaker', emoji:'🕺', prompt:"Start a ridiculous dance move for everyone to copy.", instruction:"After 5 seconds, someone else adds a new move."},
+    {category:'Icebreaker', emoji:'👀', prompt:"Who in this group would survive longest on a deserted island?", instruction:"Everyone votes."},
+    {category:'Icebreaker', emoji:'🎵', prompt:"What's a song you can't help but sing along to?", instruction:"Bonus points if you sing a line."},
+    {category:'Icebreaker', emoji:'🧳', prompt:"What's the best trip you've ever been on?", instruction:"Give one favorite detail."},
+    // Would You Rather
+    {category:'Would You Rather', emoji:'🤔', prompt:"Would you rather have unlimited free travel or never pay for food again?", instruction:"Everyone picks a side."},
+    {category:'Would You Rather', emoji:'😅', prompt:"Would you rather send an embarrassing voice note to the wrong person, or trip on stage in front of everyone?", instruction:"Choose one."},
+    {category:'Would You Rather', emoji:'📱', prompt:"Would you rather spend a week without your phone, or a week without music?", instruction:"Explain your choice."},
+    {category:'Would You Rather', emoji:'🧠', prompt:"Would you rather always know what people think of you, or never know?", instruction:"Take a vote."},
+    {category:'Would You Rather', emoji:'🌊', prompt:"Would you rather explore space or the deep ocean?", instruction:"Pick a side and defend it."},
+    // Bonding
+    {category:'Bonding', emoji:'💛', prompt:"Say one thing you appreciate about the person next to you.", instruction:"Try to be specific."},
+    {category:'Bonding', emoji:'🌱', prompt:"What's one thing you'd genuinely like to get better at this year?", instruction:"Big or small, anything counts."},
+    {category:'Bonding', emoji:'🫶', prompt:"What makes you feel comfortable being yourself around someone?", instruction:"Anyone can answer."},
+    {category:'Bonding', emoji:'✨', prompt:"What small thing can instantly make your day better?", instruction:"Quick answers around the circle."},
+    {category:'Bonding', emoji:'🥹', prompt:"What compliment have you received that you still remember?", instruction:"Tell us why it stuck with you."},
+    {category:'Bonding', emoji:'📖', prompt:"Share something about yourself most people here don't know.", instruction:"Funny or meaningful, your call."},
+    // Faith
+    {category:'Faith', emoji:'🙏', prompt:"What's one thing you're grateful to God for right now?", instruction:"Anyone who wants to can answer."},
+    {category:'Faith', emoji:'💡', prompt:"Which Bible character would you like to have a one-hour conversation with?", instruction:"What would you ask them?"},
+    {category:'Faith', emoji:'🌤️', prompt:"Share a time you saw God help you through something difficult.", instruction:"Only share what you're comfortable with."},
+    {category:'Faith', emoji:'❤️', prompt:"Finish this sentence: one thing I want God to grow in me is...", instruction:"Think for a few seconds before answering."},
+    {category:'Faith', emoji:'📣', prompt:"What encouragement would you give another young Christian your age?", instruction:"Keep it short and honest."},
+    {category:'Faith', emoji:'📖', prompt:"Share one Bible verse that means a lot to you right now.", instruction:"Say why it matters to you."},
+    // Challenge
+    {category:'Challenge', emoji:'🎬', prompt:"Create a dramatic 30-second advertisement for WATER.", instruction:"Recruit two people to help.", timer:true},
+    {category:'Challenge', emoji:'🤫', prompt:"Line yourselves up by birthday month, without speaking.", instruction:"January to December.", timer:true},
+    {category:'Challenge', emoji:'🗿', prompt:"Everybody freeze in the most dramatic pose possible.", instruction:"The group votes on the funniest pose."},
+    {category:'Challenge', emoji:'🔤', prompt:"Name 10 Bible characters in 20 seconds.", instruction:"No repeats allowed.", timer:true},
+    {category:'Challenge', emoji:'🏃', prompt:"Find something nearby that starts with the letter S.", instruction:"First person back wins.", timer:true},
+    {category:'Challenge', emoji:'🎤', prompt:"Make up a 10-second song using the words RETREAT, GARDEN and JESUS.", instruction:"Recruit backup singers if you want."},
+    {category:'Challenge', emoji:'🧩', prompt:"Count from 1 to 15 as a group, with nobody deciding who speaks next.", instruction:"If two people talk at once, start over."},
+    // Most Likely
+    {category:'Most Likely', emoji:'👉', prompt:"Who is most likely to plan a whole trip before anyone's booked a ticket?", instruction:"Point on 3!"},
+    {category:'Most Likely', emoji:'🤣', prompt:"Who is most likely to laugh during a serious moment?", instruction:"Point on 3!"},
+    {category:'Most Likely', emoji:'🧑‍🍳', prompt:"Who is most likely to open a successful restaurant?", instruction:"Point on 3!"},
+    {category:'Most Likely', emoji:'📱', prompt:"Who is most likely to lose their phone while holding it?", instruction:"Point on 3!"},
+    {category:'Most Likely', emoji:'🌍', prompt:"Who is most likely to randomly move to another country?", instruction:"Point on 3!"},
+    {category:'Most Likely', emoji:'🎤', prompt:"Who is most likely to become a motivational speaker?", instruction:"Point on 3!"},
+    // Group
+    {category:'Group', emoji:'👏', prompt:"Give someone in the circle a genuine shout-out.", instruction:"Mention something positive you've noticed about them.", isGroup:true},
+    {category:'Group', emoji:'📸', prompt:"Create the most dramatic group photo pose possible.", instruction:"You have 30 seconds.", timer:true, isGroup:true},
+    {category:'Group', emoji:'🧠', prompt:"Find THREE things everyone in the group has in common.", instruction:"Being at the retreat doesn't count!", isGroup:true},
+    {category:'Group', emoji:'🤝', prompt:"Pair up with someone you don't usually talk to, then find two things in common.", instruction:"Share one with the group after.", isGroup:true},
+    // Garden Dare (from original Garden Games deck)
+    {category:'Garden Dare', emoji:'🌸', prompt:"Find a flower nearby and give it to someone with a kind word.", instruction:"Make it genuine."},
+    {category:'Garden Dare', emoji:'🐸', prompt:"Do your best impression of an animal you'd find in a garden.", instruction:"Everyone guesses the animal."},
+    {category:'Garden Dare', emoji:'🎶', prompt:"Lead the group in singing one line of a worship song.", instruction:"Get everyone to join in."},
+    {category:'Garden Dare', emoji:'🌈', prompt:"Give three people a genuine compliment, right now.", instruction:"Go around the circle."},
+    {category:'Garden Dare', emoji:'🦩', prompt:"Walk like a flamingo to the nearest tree and back.", instruction:"Commit to the walk."},
+    {category:'Garden Dare', emoji:'😂', prompt:"Tell a two-sentence joke, bonus points if it's actually funny.", instruction:"Keep it clean."},
+  ];
+  let deckActive = new Set([...new Set(deckCards.map(c => c.category))]);
+  let deckHistory = {};
+  let deckPlayers = [];
+  let deckScore = 0;
+
+  function renderDeckFilters() {
+    const cats = [...new Set(deckCards.map(c => c.category))];
+    const wrap = document.getElementById('deck-filters');
+    wrap.innerHTML = '';
+    cats.forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'chip-toggle' + (deckActive.has(cat) ? ' active' : '');
+      b.textContent = cat;
+      b.onclick = () => {
+        if (deckActive.has(cat)) { if (deckActive.size > 1) deckActive.delete(cat); }
+        else deckActive.add(cat);
+        renderDeckFilters();
+      };
+      wrap.appendChild(b);
+    });
+  }
+  renderDeckFilters();
+
+  function getDeckPlayers() {
+    const raw = document.getElementById('deck-names').value.trim();
+    return raw ? raw.split(/[,\n]+/).map(s => s.trim()).filter(Boolean) : [];
+  }
+
+  function showDeckCard(card) {
+    document.getElementById('deck-cat').textContent = card.category.toUpperCase();
+    document.getElementById('deck-emoji').textContent = card.emoji;
+    const el = document.getElementById('deck-prompt');
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    el.textContent = card.prompt;
+    document.getElementById('deck-instruction').textContent = card.instruction || '';
+    const players = getDeckPlayers();
+    const whoEl = document.getElementById('deck-who');
+    if (!card.isGroup && players.length > 0) {
+      const person = players[Math.floor(Math.random() * players.length)];
+      whoEl.textContent = person + ', you start this one 👀';
+    } else {
+      whoEl.textContent = 'Everyone joins in 🙌';
+    }
+  }
+
+  function drawDeck() {
+    const pool = [...deckActive];
+    const cat = pool[Math.floor(Math.random() * pool.length)];
+    if (!deckHistory[cat] || deckHistory[cat].length === 0) {
+      deckHistory[cat] = deckCards.map((c, i) => i).filter(i => deckCards[i].category === cat);
+    }
+    const idx = Math.floor(Math.random() * deckHistory[cat].length);
+    const cardIndex = deckHistory[cat].splice(idx, 1)[0];
+    showDeckCard(deckCards[cardIndex]);
+  }
+
+  function drawGroupCard() {
+    const groupCards = deckCards.filter(c => c.isGroup);
+    const card = groupCards[Math.floor(Math.random() * groupCards.length)];
+    showDeckCard(card);
+  }
+
+  function pickPersonDeck() {
+    const players = getDeckPlayers();
+    const whoEl = document.getElementById('deck-who');
+    if (players.length === 0) { whoEl.textContent = 'Add names above to pick someone 🎯'; return; }
+    const person = players[Math.floor(Math.random() * players.length)];
+    whoEl.textContent = '🎯 ' + person + ' has been chosen!';
+  }
+
+  function changeScore(amount) {
+    deckScore = Math.max(0, Math.min(15, deckScore + amount));
+    document.getElementById('deck-score').textContent = deckScore;
+  }
+
+  // ==================================================================
+  // CHARADES
+  // ==================================================================
+  const charadesCategories = {
+    'Bible Characters': ['Moses', 'Noah', 'David and Goliath', "Jonah and the Whale", 'Esther', "Daniel in the Lions' Den", 'Samson', 'Mary and Joseph', 'Peter Walking on Water', 'Zacchaeus in the Tree', 'The Good Samaritan', 'Jesus Feeding 5000', 'Elijah and the Fire', 'Ruth and Naomi'],
+    'Animals': ['Kangaroo', 'Elephant', 'Peacock', 'Monkey', 'Snake', 'Penguin', 'Gorilla', 'Flamingo', 'Crab', 'Owl'],
+    'Actions & Emotions': ['Brushing teeth', 'Riding a rollercoaster', 'Falling asleep in class', 'Winning a race', 'Eating spicy food', 'Being scared of a spider', 'Scoring a goal', 'Trying not to laugh', 'Ice skating', 'Being super excited on Christmas'],
+    'Movies & Shows': ['Cinderella', 'Spider-Man', 'The Lion King', 'Frozen', 'Toy Story', 'Home Alone', 'Encanto', 'Sonic the Hedgehog']
+  };
+  let charadesActive = new Set(['Bible Characters', 'Animals', 'Actions & Emotions']);
+  let charadesHistory = {};
+  let timerInterval = null, timerSeconds = 60, timerRunning = false;
+
+  function renderCharadesFilters() {
+    const wrap = document.getElementById('charades-filters');
+    wrap.innerHTML = '';
+    Object.keys(charadesCategories).forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'chip-toggle' + (charadesActive.has(cat) ? ' active' : '');
+      b.textContent = cat;
+      b.onclick = () => {
+        if (charadesActive.has(cat)) { if (charadesActive.size > 1) charadesActive.delete(cat); }
+        else charadesActive.add(cat);
+        renderCharadesFilters();
+      };
+      wrap.appendChild(b);
+    });
+  }
+  renderCharadesFilters();
+
+  function nextWord() {
+    const pool = [...charadesActive];
+    const cat = pool[Math.floor(Math.random() * pool.length)];
+    if (!charadesHistory[cat] || charadesHistory[cat].length === 0) {
+      charadesHistory[cat] = [...charadesCategories[cat]];
+    }
+    const idx = Math.floor(Math.random() * charadesHistory[cat].length);
+    const word = charadesHistory[cat].splice(idx, 1)[0];
+    document.getElementById('word-text').textContent = word;
+    document.getElementById('word-text').classList.add('hidden');
+    document.getElementById('word-hidden-label').classList.remove('hidden');
+    document.getElementById('word-hidden-label').textContent = 'Category: ' + cat + ' (tap reveal)';
+    resetTimer();
+  }
+  function revealWord() {
+    document.getElementById('word-text').classList.remove('hidden');
+    document.getElementById('word-hidden-label').classList.add('hidden');
+  }
+  function resetTimer() {
+    clearInterval(timerInterval); timerRunning = false; timerSeconds = 60;
+    document.getElementById('timer-display').classList.add('hidden');
+    document.getElementById('timer-btn').textContent = '⏱️ Start 60s Timer';
+  }
+  function toggleTimer() {
+    const disp = document.getElementById('timer-display');
+    if (timerRunning) { resetTimer(); return; }
+    timerRunning = true; timerSeconds = 60;
+    disp.classList.remove('hidden');
+    updateTimerDisplay();
+    document.getElementById('timer-btn').textContent = '⏹️ Stop Timer';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) { clearInterval(timerInterval); timerRunning = false; disp.textContent = "Time's up!"; document.getElementById('timer-btn').textContent = '⏱️ Start 60s Timer'; }
+    }, 1000);
+  }
+  function updateTimerDisplay() {
+    const m = Math.floor(timerSeconds / 60), s = timerSeconds % 60;
+    document.getElementById('timer-display').textContent = m + ':' + String(s).padStart(2, '0');
+  }
+  nextWord();
+
+  // ==================================================================
+  // FINGER FRENZY
+  // ==================================================================
+  const frenzyColors = ['#d1567b', '#4a90a4', '#d99a1f', '#8a5fb0', '#c1653b', '#5c8a5f', '#3f6fa8', '#e07a5f', '#81b29a', '#f2cc8f', '#b56576', '#6d597a', '#355c7d', '#e8a87c', '#5d8aa8'];
+  const frenzyEmoji = ['🌻', '🍀', '🦋', '🐞', '🌈', '☀️', '🌸', '🍄', '🦄', '🌼', '🍉', '⭐', '🐢', '🦜', '🍒'];
+  let frenzyTouches = {};
+  let frenzyPhase = 'idle';
+  let frenzyColorIndex = 0;
+  let frenzyPlacingTimeout = null, frenzyEliminateTimeout = null;
+
+  function openFrenzy() {
+    document.getElementById('frenzy-shell').classList.remove('hidden');
+    document.getElementById('topbar').style.display = 'none';
+    resetFrenzyState();
+  }
+  function closeFrenzy() {
+    document.getElementById('frenzy-shell').classList.add('hidden');
+    document.getElementById('topbar').style.display = 'flex';
+    clearTimeout(frenzyPlacingTimeout);
+    clearTimeout(frenzyEliminateTimeout);
+    goHome();
+  }
+  function resetFrenzyState() {
+    frenzyTouches = {}; frenzyColorIndex = 0; frenzyPhase = 'idle';
+    const area = document.getElementById('frenzy-area');
+    area.querySelectorAll('.touch-dot, .winner-banner').forEach(n => n.remove());
+    document.getElementById('frenzy-intro').classList.remove('hidden');
+    document.getElementById('frenzy-status').textContent = 'Everyone put a finger down!';
+  }
+
+  function startFrenzyRound() {
+    document.getElementById('frenzy-intro').classList.add('hidden');
+    frenzyPhase = 'placing';
+    document.getElementById('frenzy-status').textContent = 'Place your fingers... starting soon!';
+    frenzyPlacingTimeout = setTimeout(() => {
+      const remaining = Object.values(frenzyTouches).filter(t => !t.out);
+      if (remaining.length < 2) {
+        document.getElementById('frenzy-status').textContent = 'Need at least 2 fingers, try again!';
+        frenzyPhase = 'idle';
+        setTimeout(resetFrenzyState, 1800);
+        return;
+      }
+      frenzyPhase = 'eliminating';
+      document.getElementById('frenzy-status').textContent = remaining.length + ' players left...';
+      scheduleElimination();
+    }, 4000);
+  }
+
+  function scheduleElimination() {
+    const delay = 1000 + Math.random() * 1400;
+    frenzyEliminateTimeout = setTimeout(eliminateOne, delay);
+  }
+
+  function eliminateOne() {
+    const remaining = Object.entries(frenzyTouches).filter(([id, t]) => !t.out);
+    if (remaining.length <= 1) { announceWinner(remaining); return; }
+    const [id, t] = remaining[Math.floor(Math.random() * remaining.length)];
+    t.out = true;
+    t.el.classList.add('out');
+    setTimeout(() => t.el.remove(), 450);
+    const stillIn = Object.values(frenzyTouches).filter(x => !x.out);
+    if (stillIn.length <= 1) { announceWinner(Object.entries(frenzyTouches).filter(([id2, t2]) => !t2.out)); return; }
+    document.getElementById('frenzy-status').textContent = stillIn.length + ' players left...';
+    scheduleElimination();
+  }
+
+  function announceWinner(remaining) {
+    frenzyPhase = 'done';
+    document.getElementById('frenzy-status').textContent = 'We have a winner!';
+    if (remaining.length === 1) { remaining[0][1].el.classList.add('winner'); }
+    const area = document.getElementById('frenzy-area');
+    const banner = document.createElement('div');
+    banner.className = 'winner-banner';
+    banner.innerHTML = `<div class="big">🏆</div><h3>Winner winner!</h3><button class="btn btn-primary" onclick="resetFrenzyState()">Play Again</button>`;
+    area.appendChild(banner);
+  }
+
+  function frenzyCreateDot(id, x, y) {
+    const area = document.getElementById('frenzy-area');
+    const dot = document.createElement('div');
+    dot.className = 'touch-dot';
+    dot.style.left = x + 'px';
+    dot.style.top = y + 'px';
+    dot.style.background = frenzyColors[frenzyColorIndex % frenzyColors.length];
+    dot.textContent = frenzyEmoji[frenzyColorIndex % frenzyEmoji.length];
+    frenzyColorIndex++;
+    area.appendChild(dot);
+    frenzyTouches[id] = { el: dot, out: false };
+  }
+  function frenzyMoveDot(id, x, y) {
+    const t = frenzyTouches[id];
+    if (t && !t.out) { t.el.style.left = x + 'px'; t.el.style.top = y + 'px'; }
+  }
+  function frenzyRemoveTouch(id) {
+    const t = frenzyTouches[id];
+    if (!t) return;
+    if (frenzyPhase === 'placing') {
+      t.el.remove();
+      delete frenzyTouches[id];
+    } else if (frenzyPhase === 'eliminating' && !t.out) {
+      t.out = true;
+      t.el.classList.add('out');
+      setTimeout(() => t.el.remove(), 450);
+      const stillIn = Object.values(frenzyTouches).filter(x => !x.out);
+      if (stillIn.length <= 1) {
+        clearTimeout(frenzyEliminateTimeout);
+        announceWinner(Object.entries(frenzyTouches).filter(([id2, t2]) => !t2.out));
+      }
+    }
+  }
+
+  const frenzyAreaEl = document.getElementById('frenzy-area');
+  frenzyAreaEl.addEventListener('touchstart', e => {
+    if (frenzyPhase !== 'placing') return;
+    const rect = frenzyAreaEl.getBoundingClientRect();
+    for (const touch of e.changedTouches) { frenzyCreateDot(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top); }
+    e.preventDefault();
+  }, { passive: false });
+  frenzyAreaEl.addEventListener('touchmove', e => {
+    const rect = frenzyAreaEl.getBoundingClientRect();
+    for (const touch of e.changedTouches) { frenzyMoveDot(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top); }
+    e.preventDefault();
+  }, { passive: false });
+  ['touchend', 'touchcancel'].forEach(evt => {
+    frenzyAreaEl.addEventListener(evt, e => {
+      for (const touch of e.changedTouches) { frenzyRemoveTouch(touch.identifier); }
+      e.preventDefault();
+    }, { passive: false });
+  });
+  let mouseDown = false;
+  frenzyAreaEl.addEventListener('mousedown', e => {
+    if (frenzyPhase !== 'placing') return;
+    mouseDown = true;
+    const rect = frenzyAreaEl.getBoundingClientRect();
+    frenzyCreateDot('mouse', e.clientX - rect.left, e.clientY - rect.top);
+  });
+  frenzyAreaEl.addEventListener('mousemove', e => {
+    if (!mouseDown) return;
+    const rect = frenzyAreaEl.getBoundingClientRect();
+    frenzyMoveDot('mouse', e.clientX - rect.left, e.clientY - rect.top);
+  });
+  window.addEventListener('mouseup', () => { if (mouseDown) { mouseDown = false; frenzyRemoveTouch('mouse'); } });
+
+  // ==================================================================
+  // WORD BOMB (adapted from Gemini's Pass & Play)
+  // ==================================================================
+  const bombCategories = [
+    "Books of the Bible", "Things you find in a garden", "Pizza toppings", "Animals found in Africa",
+    "Famous superheroes", "Worship songs", "Things that are green", "Social media apps",
+    "Bible characters", "Fast food restaurants", "Things you pack for a trip", "Cartoon characters",
+    "Ice cream flavors", "Sports played with a ball", "Types of fruit", "Hobbies",
+    "Things found in a kitchen", "Names that start with J", "Board games"
+  ];
+  const bombForfeits = [
+    "Share your favorite thing about the person to your left.", "Do your best animal impression.",
+    "Sing the chorus of your favorite song.", "Tell the group a clean joke.", "Do 10 jumping jacks.",
+    "Share one thing you're grateful for today.", "Let the group pick your nickname for the rest of the day.",
+    "Show us your best dance move.", "Share a funny childhood memory.",
+    "Make up a secret handshake with the person next to you.", "Speak with a funny accent for the next 3 rounds.",
+    "Share your favorite Bible verse and why."
+  ];
+
+  let bombActive = false, bombEndTime = 0, bombTotalDuration = 0, bombNextTick = 0, bombPassCount = 0, bombFrame;
+  let bombSynth, bombExplosion, bombDing, bombAudioReady = false;
+
+  function initBombAudio() {
+    if (bombAudioReady || typeof Tone === 'undefined') return;
+    bombSynth = new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 2, oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+    bombSynth.volume.value = -8;
+    bombExplosion = new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.01, decay: 1.2, sustain: 0 } }).toDestination();
+    bombExplosion.volume.value = 0;
+    bombDing = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 } }).toDestination();
+    bombDing.volume.value = -12;
+    bombAudioReady = true;
+  }
+
+  function openBomb() {
+    document.getElementById('bomb-shell').classList.remove('hidden');
+    document.getElementById('topbar').style.display = 'none';
+    resetBombIntro();
+  }
+  function closeBomb() {
+    bombActive = false;
+    cancelAnimationFrame(bombFrame);
+    document.getElementById('bomb-shell').classList.add('hidden');
+    document.getElementById('bomb-shell').style.backgroundColor = '';
+    document.getElementById('topbar').style.display = 'flex';
+    goHome();
+  }
+  function resetBombIntro() {
+    bombActive = false;
+    cancelAnimationFrame(bombFrame);
+    document.getElementById('bomb-shell').style.backgroundColor = '';
+    document.getElementById('bomb-intro').classList.remove('hidden');
+    document.getElementById('bomb-playing').classList.add('hidden');
+    document.getElementById('bomb-end').classList.add('hidden');
+  }
+
+  async function startBomb() {
+    if (typeof Tone !== 'undefined' && Tone.start) { try { await Tone.start(); } catch (e) {} }
+    initBombAudio();
+
+    document.getElementById('bomb-category').textContent = bombCategories[Math.floor(Math.random() * bombCategories.length)];
+    bombPassCount = 0;
+    document.getElementById('bomb-pass-count').textContent = 0;
+
+    bombTotalDuration = (Math.random() * 25000) + 15000; // 15–40s
+    bombEndTime = Date.now() + bombTotalDuration;
+    bombNextTick = 0;
+    bombActive = true;
+
+    document.getElementById('bomb-intro').classList.add('hidden');
+    document.getElementById('bomb-end').classList.add('hidden');
+    document.getElementById('bomb-playing').classList.remove('hidden');
+    document.getElementById('bomb-shell').style.backgroundColor = 'var(--safe)';
+
+    if (bombFrame) cancelAnimationFrame(bombFrame);
+    bombLoop();
+  }
+
+  function bombLoop() {
+    if (!bombActive) return;
+    const now = Date.now();
+    const timeLeft = bombEndTime - now;
+    const pct = timeLeft / bombTotalDuration;
+
+    if (timeLeft <= 0) { bombExplode(); return; }
+
+    const icon = document.getElementById('bomb-icon');
+    const shell = document.getElementById('bomb-shell');
+    if (pct < 0.3) {
+      shell.style.backgroundColor = 'var(--danger)';
+      icon.classList.add('danger'); icon.classList.remove('pulse');
+    } else if (pct < 0.6) {
+      shell.style.backgroundColor = 'var(--warn)';
+      icon.classList.add('pulse'); icon.classList.remove('danger');
+    } else {
+      shell.style.backgroundColor = 'var(--safe)';
+      icon.classList.add('pulse'); icon.classList.remove('danger');
+    }
+
+    if (bombAudioReady && now >= bombNextTick) {
+      bombSynth.triggerAttackRelease('C2', '16n');
+      bombNextTick = now + Math.max(100, pct * 1000);
+    }
+
+    bombFrame = requestAnimationFrame(bombLoop);
+  }
+
+  function bombPass() {
+    if (!bombActive) return;
+    bombPassCount++;
+    document.getElementById('bomb-pass-count').textContent = bombPassCount;
+    if (bombAudioReady) bombDing.triggerAttackRelease(['C5', 'E5'], '8n');
+    const icon = document.getElementById('bomb-icon');
+    icon.style.transform = 'scale(1.2)';
+    setTimeout(() => { if (bombActive) icon.style.transform = 'scale(1)'; }, 100);
+  }
+
+  function bombExplode() {
+    bombActive = false;
+    if (bombAudioReady) bombExplosion.triggerAttackRelease('2n');
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+    document.getElementById('bomb-forfeit').textContent = bombForfeits[Math.floor(Math.random() * bombForfeits.length)];
+    document.getElementById('bomb-playing').classList.add('hidden');
+    document.getElementById('bomb-end').classList.remove('hidden');
+    document.getElementById('bomb-shell').style.backgroundColor = 'var(--moss-deep)';
+  }
+
+  // ==================================================================
+  // PWA install prompt
+  // ==================================================================
+  let deferredInstallPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const row = document.getElementById('install-row');
+    row.innerHTML = '<button class="install-btn" id="install-btn">⬇️ Install App</button>';
+    document.getElementById('install-btn').addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      row.innerHTML = '';
+    });
+  });
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIOS && !isStandalone) { document.getElementById('ios-hint').classList.remove('hidden'); }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
