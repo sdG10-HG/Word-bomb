@@ -1,12 +1,12 @@
 # Garden Retreat Games
 
-A installable PWA (Progressive Web App) with five group games for a youth retreat, built for one device and a whole room of people:
+A installable PWA (Progressive Web App) with five group games for a youth retreat, built for one iPad and a whole room of people:
 
-- **Team Shuffle** : randomly split everyone into teams
-- **Finger Frenzy** : multi-touch "last finger standing" elimination game
-- **Prompt Deck** : icebreakers, would-you-rathers, faith talk, dares and challenges, with an optional name list and a group points tracker
-- **Act It Out** : charades with Bible characters, animals, actions and movies
-- **Word Bomb** : pass-the-iPad word game with a ticking timer, sound effects and forfeits
+- **Team Shuffle** — randomly split everyone into teams
+- **Finger Frenzy** — multi-touch "last finger standing" elimination game
+- **Prompt Deck** — icebreakers, would-you-rathers, faith talk, dares and challenges, with an optional name list and a group points tracker
+- **Act It Out** — charades with Bible characters, animals, actions and movies
+- **Word Bomb** — pass-the-iPad word game with a ticking timer, sound effects and forfeits
 
 ## Files
 
