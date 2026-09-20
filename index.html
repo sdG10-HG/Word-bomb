@@ -778,14 +778,26 @@
     e.preventDefault();
   }, { passive: false });
   frenzyAreaEl.addEventListener('touchmove', e => {
+    if (frenzyPhase !== 'placing' && frenzyPhase !== 'eliminating') return;
     const rect = frenzyAreaEl.getBoundingClientRect();
-    for (const touch of e.changedTouches) { frenzyMoveDot(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top); }
-    e.preventDefault();
+    let handled = false;
+    for (const touch of e.changedTouches) {
+      if (frenzyTouches[touch.identifier]) {
+        frenzyMoveDot(touch.identifier, touch.clientX - rect.left, touch.clientY - rect.top);
+        handled = true;
+      }
+    }
+    if (handled) e.preventDefault();
   }, { passive: false });
   ['touchend', 'touchcancel'].forEach(evt => {
     frenzyAreaEl.addEventListener(evt, e => {
-      for (const touch of e.changedTouches) { frenzyRemoveTouch(touch.identifier); }
-      e.preventDefault();
+      if (frenzyPhase !== 'placing' && frenzyPhase !== 'eliminating') return;
+      for (const touch of e.changedTouches) {
+        if (frenzyTouches[touch.identifier]) {
+          frenzyRemoveTouch(touch.identifier);
+          e.preventDefault();
+        }
+      }
     }, { passive: false });
   });
   let mouseDown = false;
